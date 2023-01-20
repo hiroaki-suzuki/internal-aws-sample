@@ -1,0 +1,4 @@
+.angular
+node_modules
+src/environments/*
+!src/environments/environment.sample.ts

@@ -1,0 +1,18 @@
+<amplify-authenticator>
+  <ng-template
+      amplifySlot="authenticated"
+      let-user="user"
+      let-signOut="signOut"
+  >
+    <h1>Home</h1>
+    <h2>Welcome {{ user.username }}!</h2>
+    <button (click)="signOut()">Sign Out</button>
+  </ng-template>
+</amplify-authenticator>
+<div class="buttons">
+  <button (click)="onAuth()">認証あり</button>
+  <button (click)="onPublic()">認証なし</button>
+  <button>Hello, backend</button>
+
+  <p>{{message}}</p>
+</div>
