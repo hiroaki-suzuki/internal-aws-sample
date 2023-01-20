@@ -26,41 +26,47 @@ export class LoginComponent implements OnInit {
     // AmplifyのAuth.endpointでも書き換え可能
     // 以下のような形で無理やり書き換えられるが、
     // バージョンによっては以下がない可能性があるので、その場合は別のポイントを見つける必要がある
-    Amplify.Auth.userPool.client.endpoint = environment.cognito.userPoolEndpoint;
+    if (environment.cognito.userPoolEndpoint !== '') {
+      Amplify.Auth.userPool.client.endpoint = environment.cognito.userPoolEndpoint;
+    }
 
     // IDプールのエンドポイント
     // Amplifyの方では提供されていないようで、書き換えがConfigではできなかった
     // 以下のような形で無理やり書き換えられるが、
     // バージョンによっては以下がない可能性があるので、その場合は別のポイントを見つける必要がある
-    const orgHandleFunc = FetchHttpHandler.prototype.handle;
-    FetchHttpHandler.prototype.handle = (
-      request: HttpRequest,
-      options: HttpHandlerOptions = {},
-    ): Promise<{ response: HttpResponse }> => {
-      if (request.hostname === 'cognito-identity.ap-northeast-1.amazonaws.com') {
-        request.hostname = environment.cognito.idPoolHostname;
-        request.protocol = environment.cognito.idPoolProtocol;
-      }
+    if (environment.cognito.idPoolHostname !== '') {
+      const orgHandleFunc = FetchHttpHandler.prototype.handle;
+      FetchHttpHandler.prototype.handle = (
+        request: HttpRequest,
+        options: HttpHandlerOptions = {},
+      ): Promise<{ response: HttpResponse }> => {
+        if (request.hostname === 'cognito-identity.ap-northeast-1.amazonaws.com') {
+          request.hostname = environment.cognito.idPoolHostname;
+          request.protocol = environment.cognito.idPoolProtocol;
+        }
 
-      return orgHandleFunc.call(this, request, options);
-    };
+        return orgHandleFunc.call(this, request, options);
+      };
+    }
   }
 
   private changeApiGatewaySignatureV4() {
     // API GatewayのIAM認証を使用する場合に、署名のホストが合わずエラーになるため一時的に書き換える
     // 以下のような形で無理やり書き換えられるが、
     // バージョンによっては以下がない可能性があるので、その場合は別のポイントを見つける必要がある
-    const orgSignFunc = Signer.sign;
-    Signer.sign = (request: any, access_info: any, service_info?: any) => {
-      const url = request.url;
+    if (environment.api.proxyHostPath !== '') {
+      const orgSignFunc = Signer.sign;
+      Signer.sign = (request: any, access_info: any, service_info?: any) => {
+        const url = request.url;
 
-      request.url = url.replace(environment.api.proxyHostPath, environment.api.apiGatewayHostPath);
+        request.url = url.replace(environment.api.proxyHostPath, environment.api.apiGatewayHostPath);
 
-      const signedRequest = orgSignFunc(request, access_info, service_info);
-      signedRequest.url = url;
+        const signedRequest = orgSignFunc(request, access_info, service_info);
+        signedRequest.url = url;
 
-      return signedRequest;
-    };
+        return signedRequest;
+      };
+    }
   }
 
   onAuth() {
