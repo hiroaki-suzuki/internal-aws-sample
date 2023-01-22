@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  proxy-app:
+    build:
+      context: proxy-app/infra/docker
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - "./proxy-app/proxy:/opt/proxy"
+    environment:
+      TZ: Asia/Tokyo
+    command: /opt/start-dev.sh
