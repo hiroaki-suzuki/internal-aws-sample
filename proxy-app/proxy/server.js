@@ -21,7 +21,7 @@ const credentials = new AWS.CognitoIdentityCredentials({
 AWS.config.update({
   region: 'ap-northeast-1',
   credentials: credentials,
-  // httpOptions: { agent: proxy(process.env.PROXY_URL) },
+  httpOptions: { agent: proxy(process.env.PROXY_URL) },
 });
 
 app.get('/', (req, res) => {
@@ -69,6 +69,27 @@ app.post('/auth-idp', (req, res) => {
         cognitoIdp.revokeToken(params, function (err, data) {
           res.send();
         });
+      });
+    } else if (target === 'AWSCognitoIdentityProviderService.SignUp') {
+      const params = {
+        ClientId: req.body.ClientId,
+        Username: req.body.Username,
+        Password: req.body.Password,
+        UserAttributes: req.body.UserAttributes,
+        ValidationData: req.body.ValidationData,
+      };
+      cognitoIdp.signUp(params, function (err, data) {
+        handleResponse(err, res, data);
+      });
+    } else if (target === 'AWSCognitoIdentityProviderService.ConfirmSignUp') {
+      const params = {
+        ClientId: req.body.ClientId,
+        Username: req.body.Username,
+        ConfirmationCode: req.body.ConfirmationCode,
+        ForceAliasCreation: req.body.ForceAliasCreation,
+      };
+      cognitoIdp.confirmSignUp(params, function (err, data) {
+        handleResponse(err, res, data);
       });
     } else {
       // 定義漏れ
