@@ -138,6 +138,8 @@ Resources:
       UserPoolName: !Join [ "-", [ !Ref AWS::StackName, "user", "pool" ] ]
       AliasAttributes:
         - preferred_username
+      AutoVerifiedAttributes:
+        - email
       EmailVerificationMessage: "○○システムの登録確認です。確認コードは、{####} です。"
       EmailVerificationSubject: "○○システム登録確認"
       MfaConfiguration: "OFF"
