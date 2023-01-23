@@ -18,6 +18,7 @@ services:
     volumes:
       - "./proxy-common/logs:/var/log/squid"
       - "./proxy-common/squid.conf:/etc/squid/squid.conf"
+      - "./proxy-common/whitelist:/etc/squid/whitelist"
       - "squid_data:/var/spool/squid"
     environment:
       TZ: Asia/Tokyo
