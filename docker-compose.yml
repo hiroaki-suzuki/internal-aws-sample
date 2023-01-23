@@ -11,3 +11,15 @@ services:
     environment:
       TZ: Asia/Tokyo
     command: /opt/start-dev.sh
+  proxy-common:
+    image: public.ecr.aws/ubuntu/squid:5.2-22.04_beta
+    ports:
+      - "3128:3128"
+    volumes:
+      - "./proxy-common/logs:/var/log/squid"
+      - "./proxy-common/squid.conf:/etc/squid/squid.conf"
+      - "squid_data:/var/spool/squid"
+    environment:
+      TZ: Asia/Tokyo
+volumes:
+  squid_data:
