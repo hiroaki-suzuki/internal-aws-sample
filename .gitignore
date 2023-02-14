@@ -52,4 +52,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# Other
 .idea
+infra/cf-template-packaged.yml

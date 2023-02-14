@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template for internal network environment
+
+Parameters:
+  ProjectName:
+    Type: String
+  AppPrivateSubnetA:
+    Type: String
+  AppSecurityGroup:
+    Type: String
+
+Resources:
+  # 踏み台EC2
+  BastionEC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join [ "-", [ !Ref ProjectName, "bastion", "ec2", "role" ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  BastionEC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref BastionEC2Role
+  BastionEC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0bba69335379e17f8"
+      InstanceType: t2.micro
+      SubnetId: !Ref AppPrivateSubnetA
+      SecurityGroupIds:
+        - !Ref AppSecurityGroup
+      IamInstanceProfile: !Ref BastionEC2InstanceProfile
+      KeyName: aws-rirazou0101
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "bastion" ] ]

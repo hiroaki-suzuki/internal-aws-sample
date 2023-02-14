@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template for internal network environment
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: hs-internal
+  CidrBlockVPC:
+    Type: String
+    Default: 172.16.0.0/16
+  CidrBlockAppPrivateSubnetA:
+    Type: String
+    Default: 172.16.0.0/24
+  CidrBlockAppPrivateSubnetC:
+    Type: String
+    Default: 172.16.1.0/24
+  CidrBlockDbPrivateSubnetA:
+    Type: String
+    Default: 172.16.10.0/24
+  CidrBlockDbPrivateSubnetC:
+    Type: String
+    Default: 172.16.11.0/24
+
+Resources:
+  # VPC
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./cf-template-vpc.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        CidrBlockVPC: !Ref CidrBlockVPC
+        CidrBlockAppPrivateSubnetA: !Ref CidrBlockAppPrivateSubnetA
+        CidrBlockAppPrivateSubnetC: !Ref CidrBlockAppPrivateSubnetC
+        CidrBlockDbPrivateSubnetA: !Ref CidrBlockDbPrivateSubnetA
+        CidrBlockDbPrivateSubnetC: !Ref CidrBlockDbPrivateSubnetC
+  # セキュリティグループ
+  SecurityGroup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./cf-template-sg.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        VpcId: !GetAtt VPC.Outputs.VpcId
+        CidrBlockVPC: !Ref CidrBlockVPC
+  # VPCエンドポイント
+  Endpoint:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./cf-template-endpoint.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        VpcId: !GetAtt VPC.Outputs.VpcId
+        AppPrivateSubnetA: !GetAtt VPC.Outputs.AppPrivateSubnetA
+        VpcEndpointSecurityGroup: !GetAtt SecurityGroup.Outputs.VpcEndpointSecurityGroup
+  # 踏み台サーバー
+  BastionEC2:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./cf-template-bastion.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        AppPrivateSubnetA: !GetAtt VPC.Outputs.AppPrivateSubnetA
+        AppSecurityGroup: !GetAtt SecurityGroup.Outputs.AppSecurityGroup
+  # Cognito
+  Cognito:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./cf-template-cognito.yml
+      Parameters:
+        ProjectName: !Ref ProjectName

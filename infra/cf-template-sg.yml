@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template for internal network environment
+
+Parameters:
+  ProjectName:
+    Type: String
+  VpcId:
+    Type: String
+  CidrBlockVPC:
+    Type: String
+
+Resources:
+  # アプリ用セキュリティグループ
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join [ "-", [ !Ref ProjectName, "app", "sg" ] ]
+      GroupDescription: "app security group"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref CidrBlockVPC
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "app", "sg" ] ]
+  # DB用セキュリティグループ
+  DbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join [ "-", [ !Ref ProjectName, "db", "sg" ] ]
+      GroupDescription: "db security group"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref AppSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "db", "sg" ] ]
+  # VPCエンドポイント用セキュリティグループ
+  VpcEndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join [ "-", [ !Ref ProjectName, "vpce", "sg" ] ]
+      GroupDescription: "vpc endpoint security group"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref CidrBlockVPC
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "vpce", "sg" ] ]
+
+Outputs:
+  AppSecurityGroup:
+    Value: !Ref AppSecurityGroup
+  DbSecurityGroup:
+    Value: !Ref DbSecurityGroup
+  VpcEndpointSecurityGroup:
+    Value: !Ref VpcEndpointSecurityGroup

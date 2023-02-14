@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template for internal network environment
+
+Parameters:
+  ProjectName:
+    Type: String
+  VpcId:
+    Type: String
+  AppPrivateSubnetA:
+    Type: String
+  VpcEndpointSecurityGroup:
+    Type: String
+
+Resources:
+  # SSM用
+  EndpointSSM:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.ap-northeast-1.ssm
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref AppPrivateSubnetA
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroup
+  # SSM用
+  EndpointSSMMessages:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.ap-northeast-1.ssmmessages
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref AppPrivateSubnetA
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroup
+  # SSM用
+  EndpointEC2Message:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.ap-northeast-1.ec2messages
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref AppPrivateSubnetA
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroup
+
+Outputs:
+  EndpointSSM:
+    Value: !Ref EndpointSSM
+  EndpointSSMMessages:
+    Value: !Ref EndpointSSMMessages
+  EndpointEC2Message:
+    Value: !Ref EndpointEC2Message

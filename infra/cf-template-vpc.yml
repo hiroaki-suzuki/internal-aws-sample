@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template for internal network environment
+
+Parameters:
+  ProjectName:
+    Type: String
+  CidrBlockVPC:
+    Type: String
+  CidrBlockAppPrivateSubnetA:
+    Type: String
+  CidrBlockAppPrivateSubnetC:
+    Type: String
+  CidrBlockDbPrivateSubnetA:
+    Type: String
+  CidrBlockDbPrivateSubnetC:
+    Type: String
+
+Resources:
+  # VPC
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref CidrBlockVPC
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "vpc" ] ]
+  # サブネット
+  AppPrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref CidrBlockAppPrivateSubnetA
+      AvailabilityZone: ap-northeast-1a
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "app", "private", "subnet", "a" ] ]
+  AppPrivateSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref CidrBlockAppPrivateSubnetC
+      AvailabilityZone: ap-northeast-1c
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "app", "private", "subnet", "c" ] ]
+  DbPrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref CidrBlockDbPrivateSubnetA
+      AvailabilityZone: ap-northeast-1a
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "db", "private", "subnet", "a" ] ]
+  DbPrivateSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref CidrBlockDbPrivateSubnetC
+      AvailabilityZone: ap-northeast-1c
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "db", "private", "subnet", "c" ] ]
+  # ルートテーブル
+  AppPrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "app", "private", "rtb" ] ]
+  AppPrivateSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref AppPrivateRouteTable
+      SubnetId: !Ref AppPrivateSubnetA
+  AppPrivateSubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref AppPrivateRouteTable
+      SubnetId: !Ref AppPrivateSubnetC
+
+Outputs:
+  VpcId:
+    Value: !Ref VPC
+  AppPrivateSubnetA:
+    Value: !Ref AppPrivateSubnetA
+  AppPrivateSubnetC:
+    Value: !Ref AppPrivateSubnetC
+  CidrBlockDbPrivateSubnetA:
+    Value: !Ref CidrBlockDbPrivateSubnetA
+  CidrBlockDbPrivateSubnetC:
+    Value: !Ref CidrBlockDbPrivateSubnetC
