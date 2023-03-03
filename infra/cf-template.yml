@@ -8,18 +8,21 @@ Parameters:
   CidrBlockVPC:
     Type: String
     Default: 172.16.0.0/16
-  CidrBlockAppPrivateSubnetA:
+  CidrBlockNLBPrivateSubnetA:
     Type: String
     Default: 172.16.0.0/24
-  CidrBlockAppPrivateSubnetC:
-    Type: String
-    Default: 172.16.1.0/24
-  CidrBlockDbPrivateSubnetA:
+  CidrBlockAppPrivateSubnetA:
     Type: String
     Default: 172.16.10.0/24
-  CidrBlockDbPrivateSubnetC:
+  CidrBlockAppPrivateSubnetC:
     Type: String
     Default: 172.16.11.0/24
+  CidrBlockDbPrivateSubnetA:
+    Type: String
+    Default: 172.16.20.0/24
+  CidrBlockDbPrivateSubnetC:
+    Type: String
+    Default: 172.16.21.0/24
 
 Resources:
   # VPC
@@ -30,6 +33,7 @@ Resources:
       Parameters:
         ProjectName: !Ref ProjectName
         CidrBlockVPC: !Ref CidrBlockVPC
+        CidrBlockNLBPrivateSubnetA: !Ref CidrBlockNLBPrivateSubnetA
         CidrBlockAppPrivateSubnetA: !Ref CidrBlockAppPrivateSubnetA
         CidrBlockAppPrivateSubnetC: !Ref CidrBlockAppPrivateSubnetC
         CidrBlockDbPrivateSubnetA: !Ref CidrBlockDbPrivateSubnetA
@@ -69,3 +73,23 @@ Resources:
       TemplateURL: ./cf-template-cognito.yml
       Parameters:
         ProjectName: !Ref ProjectName
+  # S3
+  S3:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./cf-template-s3.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+  # ELB
+  ELB:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./cf-template-elb.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        NLBPrivateSubnetA: !GetAtt VPC.Outputs.NLBPrivateSubnetA
+        AppPrivateSubnetA: !GetAtt VPC.Outputs.AppPrivateSubnetA
+        AppPrivateSubnetC: !GetAtt VPC.Outputs.AppPrivateSubnetC
+        ALBSecurityGroup: !GetAtt SecurityGroup.Outputs.ALBSecurityGroup
+        VpcId: !GetAtt VPC.Outputs.VpcId
+        ALBLogBucket: !GetAtt S3.Outputs.ALBLogBucket

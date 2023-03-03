@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template for internal network environment
+
+Parameters:
+  ProjectName:
+    Type: String
+
+Resources:
+  # ALBログ用S3バケット
+  ALBLogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join [ "-", [ !Ref ProjectName, "alb", "log" ] ]
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      LifecycleConfiguration:
+        Rules:
+          - ExpirationInDays: 30
+            Status: Enabled
+  ALBLogBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ALBLogBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+            Principal:
+              AWS: !Sub arn:aws:iam::582318560864:root # ELBのアカウントID
+            Resource:
+              - !Sub arn:aws:s3:::${ALBLogBucket}/AWSLogs/${AWS::AccountId}/*
+
+Outputs:
+  ALBLogBucket:
+    Value: !Ref ALBLogBucket

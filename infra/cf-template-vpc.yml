@@ -6,6 +6,8 @@ Parameters:
     Type: String
   CidrBlockVPC:
     Type: String
+  CidrBlockNLBPrivateSubnetA:
+    Type: String
   CidrBlockAppPrivateSubnetA:
     Type: String
   CidrBlockAppPrivateSubnetC:
@@ -27,6 +29,15 @@ Resources:
         - Key: Name
           Value: !Join [ "-", [ !Ref ProjectName, "vpc" ] ]
   # サブネット
+  NLBPrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref CidrBlockNLBPrivateSubnetA
+      AvailabilityZone: ap-northeast-1a
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "nlb", "private", "subnet", "a" ] ]
   AppPrivateSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
@@ -85,6 +96,8 @@ Resources:
 Outputs:
   VpcId:
     Value: !Ref VPC
+  NLBPrivateSubnetA:
+    Value: !Ref NLBPrivateSubnetA
   AppPrivateSubnetA:
     Value: !Ref AppPrivateSubnetA
   AppPrivateSubnetC:

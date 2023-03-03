@@ -10,6 +10,21 @@ Parameters:
     Type: String
 
 Resources:
+  # ALBセキュリティグループ
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join [ "-", [ !Ref ProjectName, "alb", "sg" ] ]
+      GroupDescription: "ALB Security Group"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref CidrBlockVPC
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref ProjectName, "alb", "sg" ] ]
   # アプリ用セキュリティグループ
   AppSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -21,7 +36,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: !Ref CidrBlockVPC
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
       Tags:
         - Key: Name
           Value: !Join [ "-", [ !Ref ProjectName, "app", "sg" ] ]
@@ -57,6 +72,8 @@ Resources:
           Value: !Join [ "-", [ !Ref ProjectName, "vpce", "sg" ] ]
 
 Outputs:
+  ALBSecurityGroup:
+    Value: !Ref ALBSecurityGroup
   AppSecurityGroup:
     Value: !Ref AppSecurityGroup
   DbSecurityGroup:
